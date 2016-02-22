@@ -1,0 +1,219 @@
+﻿@using Utilities;
+@using System.Text;
+
+@{
+    Layout = "_SULayout.cshtml";
+    Page.Title = "Volunteer Service Reporting";
+
+    string user_name, email, department, phone, office;
+
+    user_name = "(" + Session["username"] + ")";
+    email = Session["email"] == null ? "" : Session["email"].ToString();
+    department = Session["department"] == null ? "" : Session["department"].ToString();
+    phone = Session["telephonenumber"] == null ? "" : Session["telephonenumber"].ToString();
+    office = Session["physicaldeliveryofficename"] == null ? "" : Session["physicaldeliveryofficename"].ToString();}
+
+
+
+@if (IsPost){
+
+    var fileName = "";
+    String fileSavePath = null;
+    if (Request.Files[0].ContentLength > 0)
+    {
+        HttpPostedFileBase uploadedFile = Request.Files[0];
+        @*Response.Write(Request.Files[0].ContentLength);
+        Response.End();*@
+    
+        fileName = Path.GetFileName(uploadedFile.FileName);
+        fileSavePath = Server.MapPath("~/uploads/" + fileName);
+        uploadedFile.SaveAs(fileSavePath);
+    }
+
+    StringBuilder body = new StringBuilder();
+    StringBuilder org_body = new StringBuilder();
+    StringBuilder agency_body = new StringBuilder();
+    StringBuilder student_body = new StringBuilder();
+
+
+    var orgname = Request.Form["org"];
+    @*Session["email"] = Request.Form["email"];
+    Session["SU_ID"] = Request.Form["SU_ID"];
+    Session["description"] = Request.Form["description"];
+    Session["agency"] = Request.Form["agency"];
+    Session["cname"] = Request.Form["cname"];
+    Session["cphone"] = Request.Form["cphone"];
+    Session["cemail"] = Request.Form["cemail"];
+    Session["date_time"] = Request.Form["date_time"];
+    Session["hours"] = Request.Form["hours"];*@
+
+    body.AppendFormat("<p>A Volunteer Service Reporting Form for Groups has been submitted for {0} by {1}. <br />See below for details:</p>", orgname, user_name);
+    body.Append("<ul>");
+
+    foreach (string k in Request.Form.AllKeys)
+    {
+        if (!k.Contains("send"))
+        {
+            switch(k) {
+                
+                case "org": case "org_first_name": case "org_last_name": case "org_email":
+                    org_body.AppendFormat("<li>{0}: {1}</li>", k, Request.Form[k]);
+                    break;
+
+                case "agency": case "agency_first_name": case "agency_last_name": case "agency_email": case "description": case "date_and_time":
+                    agency_body.AppendFormat("<li>{0}: {1}</li>", k, Request.Form[k]);
+                    break;
+                    
+                case "student_fname":
+                    student_body.AppendFormat("<li>{0}: {1}", k, Request.Form[k]);
+                    break;         
+                
+                case "student_lname": case "student_id":
+                    student_body.AppendFormat(" {0}", Request.Form[k]);
+                    break;      
+
+                case "student_hours":
+                    student_body.AppendFormat(" {0}</li>", Request.Form[k]);
+                    break; 
+
+                default:
+                    break;
+            }
+        }
+    }
+    body.Append(org_body);
+    body.Append(agency_body);
+    body.Append(student_body);
+    body.Append("</ul>");
+    string subject = "Volunteer Service Reporting Form for Groups: ";
+    utils.SendMessage(body.ToString(), subject, fileSavePath);
+
+    <h4>Thank you! Your volunteer form is being processed</h4>
+    @*<ul>
+        <li>@Session["name"]</li>
+        <li>@Session["email"]</li>
+        <li>@Session["SU_ID"]</li>
+        <li>@Session["description"]</li>
+        <li>@Session["agency"]</li>
+        <li>@Session["cname"]</li>
+        <li>@Session["cphone"]</li>
+        <li>@Session["cemail"]</li>
+        <li>@Session["date_time"]</li>
+        <li>@Session["hours"]</li>
+    </ul>
+    <p>Body:</p>*@
+    @Html.Raw(body.ToString())
+
+}else{
+    @*<p>@utils.Hello()</p>*@
+<script>
+    $(function () {
+        $('#datepicker').datetimepicker({
+            timeFormat: "hh:mm tt",
+            addSliderAccess: true,
+            sliderAccessArgs: { touchonly: false },
+            dateFormat: 'mm/dd/yy',
+            changeYear: true
+        });
+    });
+
+    var counter = 1;
+    function addStudent(new_student) {
+
+        var newfield = document.createElement('p');
+        newfield.innerHTML = "Student " + (counter + 1) + ":" + " <br><input type='text' name='student_fname[]' size='30' maxlength='30' placeholder='First'><input type='text' name='student_lname[]' size='30' maxlength='30' placeholder='Last'><input type='text' name='student_id[]' size='8' maxlength='8' placeholder='ID'><input type='text' name='student_hours[]' size='5' maxlength='3' placeholder='Hours'>";
+        document.getElementById(new_student).appendChild(newfield);
+        counter++;
+    }
+
+</script>
+    <h1>Form for Groups</h1>
+    <form method="POST" enctype="multipart/form-data" action="">
+        <fieldset>
+            <legend>Organization Information</legend>
+            <div class="content" style="border-bottom: none">
+                <div class="left" style="border-bottom: none">
+                    <p>
+                        Student Organization/Team:<br />
+                        <input type="text" name="org" size="40" maxlength="40" >
+                    </p>                    <p>
+                        Contact Name:<br />
+                        <input type="text" name="org_first_name" width="39%" maxlength="40" placeholder="First">
+                        <input type="text" name="org_last_name" width="39%" maxlength="40" placeholder="Last">
+                    </p>
+                    <p>
+                        E-Mail:<br />
+                        <input type="text" name="org_email" size="40" maxlength="40">
+                    </p>
+                </div>
+            </div>
+            <div style="clear: both"></div>
+        </fieldset>
+        <fieldset>
+            <legend>Angency Information</legend>
+            <div class="content" style="border-bottom: none">
+                <div class="left" style="border-bottom: none">
+                    <p>
+                        <strong>Volunteer Agency</strong> (American Red Cross, Habitat for Humanity):<br />
+                        <input type="text" name="agency" size="50" maxlength="50">
+                    </p>
+                    <p>
+                        Contact Name:<br />
+                        <input type="text" name="agency_first_name" width="39%" maxlength="40" placeholder="First">
+                        <input type="text" name="agency_last_name" width="39%" maxlength="40" placeholder="Last">
+                    </p>
+                    <p>
+                        Phone Number:<br />
+                        <input type="text" name="agency_phone" size="31" maxlength="40">
+                    </p>
+                    <p>
+                        E-Mail:<br />
+                        <input type="text" name="agency_email" size="31" maxlength="40">
+                    </p>
+                    <p>
+                        <strong>Describe Volunteer Service Provided</strong><br />(Ex: physical labor, tutoring, nursing home aide):<br />
+                        <textarea name="description" rows="4" cols="50"></textarea>
+                    </p>    
+                    <p>
+                        Date and Time of Service:<br />
+                        <input type="text" name="date_and_time" size="31" maxlength="40" id="datepicker">
+                    </p>  
+                </div>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Student Information</legend>
+            <div class="content" style="border-bottom: none">
+                <div class="left" style="border-bottom: none"> 
+                    Name, SU ID #, and # of hours completed by Student Who Volunteered:<br /><br />
+                    Student 1:
+                    <div id="new_student">
+                        <input type="text" name="student_fname[]" size="30" maxlength="30" placeholder="First">
+                        <input type="text" name="student_lname[]" size="30" maxlength="30" placeholder="Last">
+                        <input type="text" name="student_id[]" size="8" maxlength="8" placeholder="ID">
+                        <input type="text" name="student_hours[]" size="5" maxlength="3" placeholder="Hours">
+                    </div>
+                        <input type="button" value="Add another student" onClick="addStudent('new_student');"><br /><br />   
+                    <br />
+                    <p>
+                        Attach roster if necessary:
+                        @FileUpload.GetHtml(
+                            name:"attachment",
+                            initialNumberOfFiles:1,
+                            allowMoreFilesToBeAdded:false,
+                            includeFormTag:false)
+                        @if (IsPost) {
+                            <span>File uploaded!</span><br />
+                        }
+                        
+                    </p>                    
+                    <p>&nbsp;</p>
+                    <p>
+                        <input type="submit" value="Send" name="send"><input type="reset" value="Reset" name="B2">
+                    </p>
+                    <p>&nbsp;</p>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+}

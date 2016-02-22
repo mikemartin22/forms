@@ -1,0 +1,139 @@
+﻿@using Utilities;
+@using System.Text;
+
+@{
+    Layout = "_SULayout.cshtml";
+    Page.Title = "Volunteer Service Reporting";
+
+    string user_name, email, department, phone, office;
+
+    user_name = "(" + Session["username"] + ")";
+    email = Session["email"] == null ? "" : Session["email"].ToString();
+    department = Session["department"] == null ? "" : Session["department"].ToString();
+    phone = Session["telephonenumber"] == null ? "" : Session["telephonenumber"].ToString();
+    office = Session["physicaldeliveryofficename"] == null ? "" : Session["physicaldeliveryofficename"].ToString();
+}
+
+
+@if (IsPost){
+    StringBuilder body = new StringBuilder();    
+
+    var fullname = Request.Form["student_first_name"] + " " + Request.Form["student_last_name"];
+    @*Session["email"] = Request.Form["email"];
+    Session["SU_ID"] = Request.Form["SU_ID"];
+    Session["description"] = Request.Form["description"];
+    Session["agency"] = Request.Form["agency"];
+    Session["cname"] = Request.Form["cname"];
+    Session["cphone"] = Request.Form["cphone"];
+    Session["cemail"] = Request.Form["cemail"];
+    Session["date_time"] = Request.Form["date_time"];
+    Session["hours"] = Request.Form["hours"];*@
+
+    body.AppendFormat("<p>A Volunteer Service Reporting Form for Individuals has been submitted for {0} by {1}. <br />See below for details:</p>", fullname, user_name);
+    body.Append("<ul>");
+
+    foreach (string k in Request.Form.AllKeys)
+    {
+        if (!k.Contains("send"))
+        {
+            body.AppendFormat("<li>{0}: {1}</li>", k, Request.Form[k]);
+        }
+    }
+
+    body.Append("</ul>");
+    string subject = "Volunteer Service Reporting Form for Individuals: ";
+    utils.SendMessage(body.ToString(), subject);
+
+    <h4>Thank you! Your volunteer form is being processed</h4>
+    @*<ul>
+        <li>@Session["name"]</li>
+        <li>@Session["email"]</li>
+        <li>@Session["SU_ID"]</li>
+        <li>@Session["description"]</li>
+        <li>@Session["agency"]</li>
+        <li>@Session["cname"]</li>
+        <li>@Session["cphone"]</li>
+        <li>@Session["cemail"]</li>
+        <li>@Session["date_time"]</li>
+        <li>@Session["hours"]</li>
+    </ul>
+    <p>Body:</p>*@
+    @Html.Raw(body.ToString())
+
+}else{
+    @*<p>@utils.Hello()</p>*@
+<script>
+    $(function () {
+        $('#datepicker').datetimepicker({
+                timeFormat: "hh:mm tt",
+                addSliderAccess: true,
+                sliderAccessArgs: { touchonly: false },
+                dateFormat: 'mm/dd/yy', 
+                changeYear: true 
+            });    
+    });
+</script>
+    <form method="POST" action="">
+        <fieldset>
+            <legend>Form for Individuals</legend>
+            <div class="content" style="border-bottom: none">
+                <div class="left" style="border-bottom: none">
+                    <p>
+                        Name of Student Who Volunteered:<br />
+                        <input type="text" name="student_first_name" width="39%" maxlength="40" placeholder="First">
+                        <input type="text" name="student_last_name" width="39%" maxlength="40" placeholder="Last">
+                    </p>
+                    <p>
+                        E-Mail:<br />
+                        <input type="text" name="student_email" size="40" maxlength="40" >
+                    </p>
+                    <p>
+                        SU ID #:<br />
+                        <input type="text" name="SU_ID" size="10" maxlength="10">
+                    </p>
+                    <p>
+                        <strong>Describe Volunteer Service Provided</strong><br />(Ex: physical labor, tutoring, nursing home aide):<br />
+                        <textarea name="description" rows="4" cols="50"></textarea>
+                    </p>
+                </div>
+            </div>
+            <div style="clear: both"></div>
+        </fieldset>
+        <fieldset>
+            <div class="content" style="border-bottom: none">
+                <div class="left" style="border-bottom: none">
+                    <p>
+                        <strong>Volunteer Agency</strong> (American Red Cross, Habitat for Humanity):<br />
+                        <input type="text" name="agency" size="50" maxlength="50">
+                    </p>
+                    <p>
+                        Contact Name:<br />
+                        <input type="text" name="contact_first_name" width="39%" maxlength="40" placeholder="First">
+                        <input type="text" name="contact_last_name" width="39%" maxlength="40" placeholder="Last">
+                    </p>
+                    <p>
+                        Phone Number:<br />
+                        <input type="text" name="contact_phone" size="31" maxlength="40">
+                    </p>
+                    <p>
+                        E-Mail:<br />
+                        <input type="text" name="contact_email" size="31" maxlength="40">
+                    </p>    
+                    <p>
+                        Date and Time of Service:<br />
+                        <input type="text" name="date_and_time" size="31" maxlength="40" id="datepicker">
+                    </p>  
+                    <p>
+                        Total # of Hours Logged:<br />
+                        <input type="text" name="hours_logged" size="5" maxlength="5">
+                    </p>    
+                    <p>&nbsp;</p>
+                    <p>
+                        <input type="submit" value="Send" name="send"><input type="reset" value="Reset" name="B2">
+                    </p>
+                    <p>&nbsp;</p>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+}
